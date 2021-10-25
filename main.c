@@ -12,16 +12,19 @@ typedef struct ht_entry {
 
 
 #define HT_SIZE 26801
+#define BIT_MASK (0x20 - 1)
 
 int djb2_hash(const char* str) { // djb2
     int hash_value = 0;
     while (*str != '\0') {
-        hash_value = ((hash_value << 5) + hash_value + *(str++) % 32) % HT_SIZE;
+        hash_value = ((hash_value << 5) + hash_value + (*(str++) & BIT_MASK)) % HT_SIZE;
     }
     return hash_value;
 }
 
 int str_cmp(const char*, const char*);
+
+int qsort_cmp(const void* p1, const void* p2);
 
 void shell_sort(ht_entry_t*, int);
 
@@ -89,7 +92,8 @@ int main() {
 
         }
 
-        shell_sort(entries_array, num_entries);
+        //shell_sort(entries_array, num_entries);
+        qsort(entries_array, num_entries, sizeof(ht_entry_t), qsort_cmp);
 
         printf("%d\n", num_entries);
         for (int i = 0; i < num_entries; ++i) {
@@ -106,12 +110,12 @@ int main() {
 int str_cmp(const char* a, const char* b) {
     int compare;
     for (; *a != '\0' && *b != '\0'; ++a, ++b) {
-        compare = *a % 32 - *b % 32;
+        compare = (*a & BIT_MASK) - (*b & BIT_MASK);
         if (compare != 0) {
             return compare;
         }
     }
-    return (int) strlen(a) - (int) strlen(b);
+    return (int) *a - *b;
 }
 
 int ht_entry_cmp(const ht_entry_t* a, const ht_entry_t* b) {
@@ -120,6 +124,10 @@ int ht_entry_cmp(const ht_entry_t* a, const ht_entry_t* b) {
         return compare;
     }
     return str_cmp(b->str, a->str); // inverted natural order
+}
+
+int qsort_cmp(const void* p1, const void* p2) {
+    return ht_entry_cmp((ht_entry_t*) p2, (ht_entry_t*) p1);
 }
 
 
