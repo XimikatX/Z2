@@ -34,8 +34,13 @@ void shell_sort(ht_entry_t*, int);
 
 int main() {
 
+    // num of tests = 1022
+    FILE* input = fopen("../in.txt", "r");
+    FILE* output = fopen("../out.txt", "w");
+
     int num_z;
-    scanf("%d", &num_z);
+    // scanf("%d", &num_z);
+    fscanf(input, "%d", &num_z);
 
     char* str_array = malloc(STR_NUM_MAX * STR_LEN_MAX);
     ht_entry_t* entries_array = malloc(STR_NUM_MAX * sizeof(ht_entry_t));
@@ -44,15 +49,21 @@ int main() {
     for (int z = 0; z < num_z; ++z) {
 
         int n;
-        scanf("%d", &n);
+        // scanf("%d", &n);
+        fscanf(input, "%d", &n);
+
+        // if (z < 235) continue;
+
+        printf("Zestaw number %d: %d strings\n", z + 1, n);
 
         int num_entries = 0;
-        memset(hash_table, 0, HT_SIZE);
+        memset(hash_table, 0, HT_SIZE * sizeof(ht_entry_t*));
 
         for (int i = 0; i < n; ++i) {
 
             char* str = str_array + i * STR_LEN_MAX;
-            scanf("%s", str);
+            // scanf("%s", str);
+            fscanf(input, "%s", str);
 
             int key = djb2_hash(str);
 
@@ -92,16 +103,19 @@ int main() {
 
         }
 
-        //shell_sort(entries_array, num_entries);
-        qsort(entries_array, num_entries, sizeof(ht_entry_t), qsort_cmp);
+        shell_sort(entries_array, num_entries);
+        // qsort(entries_array, num_entries, sizeof(ht_entry_t), qsort_cmp);
 
-        printf("%d\n", num_entries);
+        // printf("%d\n", num_entries);
+        fprintf(output, "%d\n", num_entries);
         for (int i = 0; i < num_entries; ++i) {
-            printf("%s %d\n", entries_array[i].str, entries_array[i].count);
+            // printf("%s %d\n", entries_array[i].str, entries_array[i].count);
+            fprintf(output, "%s %d\n", entries_array[i].str, entries_array[i].count);
         }
 
     }
 
+    fclose(input);
     return 0;
 
 }
@@ -144,7 +158,7 @@ void shell_sort(ht_entry_t* array, const int n) {
             tmp = array[i];
             int j;
             for (j = i; j >= gap && ht_entry_cmp(array + j - gap, &tmp) < 0; j -= gap) {
-                array[j] = array[j - 1];
+                array[j] = array[j - gap];
             }
             array[j] = tmp;
         }
